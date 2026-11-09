@@ -5,6 +5,7 @@
     "builds": [
         {
             "name": "atk-dnesp32s3",
+            "wake_word": "wn9_jarvis_tts",
             "sdkconfig_append": [
                 "CONFIG_CAMERA_OV2640=y",
                 "CONFIG_CAMERA_OV2640_AUTO_DETECT_DVP_INTERFACE_SENSOR=y",

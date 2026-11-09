@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ESP-IDF: Welcome#!/usr/bin/env python3
 
 import sys
 import os
@@ -1529,7 +1529,7 @@ def build_board(
         name_filter: build["name"] to compile
         create_zip: package merged-binary.bin under releases/ when true
         language: optional locale such as zh-CN; defaults to en-US when omitted
-        wake_word: optional model/alias; otherwise selected from language and board support
+        wake_word: optional model/alias; overrides a variant default, then language default
         build_options: optional semantic, board-validated option values
     """
     cfg_path = _BOARDS_DIR / Path(board_type) / config_filename
@@ -1612,7 +1612,17 @@ def build_board(
             ([option.split("=", 1)[0]], "--language")
         )
         wake_word_supported = _board_supports_wake_word(target, sdkconfig_append)
-        requested_wake_word = wake_word
+        configured_wake_word = build.get("wake_word")
+        if configured_wake_word is not None and (
+            not isinstance(configured_wake_word, str) or not configured_wake_word.strip()
+        ):
+            raise ValueError(
+                f"{cfg_path}: build {build.get('name')!r} "
+                "wake_word must be a non-empty string"
+            )
+        requested_wake_word = (
+            wake_word if wake_word is not None else configured_wake_word
+        )
         if requested_wake_word is None:
             requested_wake_word = "disabled"
             if wake_word_supported:

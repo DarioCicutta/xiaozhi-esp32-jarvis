@@ -28,8 +28,8 @@
 #define LCD_DC_PIN GPIO_NUM_40
 #define LCD_CS_PIN GPIO_NUM_21
 
-#define DISPLAY_WIDTH    320
-#define DISPLAY_HEIGHT   240
+#define DISPLAY_WIDTH    128
+#define DISPLAY_HEIGHT   128
 #define DISPLAY_MIRROR_X true
 #define DISPLAY_MIRROR_Y false
 #define DISPLAY_SWAP_XY  true

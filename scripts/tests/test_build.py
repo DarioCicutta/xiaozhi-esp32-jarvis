@@ -1501,11 +1501,14 @@ class LanguageBuildTests(unittest.TestCase):
                         validate.assert_any_call([expected.split("=", 1)[0]], "--language")
                         models = [item for item in fragment if item.startswith("CONFIG_SR_WN_")]
                         if variant["wake_word_supported"]:
-                            chinese = language in {"zh-CN", "zh-TW"}
-                            if target in {"esp32c3", "esp32c5", "esp32c6"}:
-                                model = "WN9S_NIHAOXIAOZHI" if chinese else "WN9S_HIESP"
+                            if variant["board"] == "alientek/atk-dnesp32s3":
+                                model = "WN9_JARVIS_TTS"
                             else:
-                                model = "WN9_NIHAOXIAOZHI_TTS" if chinese else "WN9_HIESP"
+                                chinese = language in {"zh-CN", "zh-TW"}
+                                if target in {"esp32c3", "esp32c5", "esp32c6"}:
+                                    model = "WN9S_NIHAOXIAOZHI" if chinese else "WN9S_HIESP"
+                                else:
+                                    model = "WN9_NIHAOXIAOZHI_TTS" if chinese else "WN9_HIESP"
                             self.assertEqual(models, [f"CONFIG_SR_WN_{model}=y"])
                             validate.assert_any_call(
                                 ["CONFIG_USE_AFE_WAKE_WORD" if target in {"esp32s3", "esp32s31", "esp32p4"}
@@ -1566,6 +1569,27 @@ class LanguageBuildTests(unittest.TestCase):
                     )
                     if expected is None:
                         self.assertIn("CONFIG_WAKE_WORD_DISABLED=y", fragment)
+
+    def test_variant_wake_word_is_used_by_default_and_cli_can_override(self):
+        with self.mock_idf() as (_, configure, _):
+            build.build_board(
+                "alientek/atk-dnesp32s3",
+                name_filter="atk-dnesp32s3",
+                idf_version=(6, 1, 0),
+            )
+            fragment = configure.call_args.args[1]
+            self.assertIn("CONFIG_SR_WN_WN9_JARVIS_TTS=y", fragment)
+
+            configure.reset_mock()
+            build.build_board(
+                "alientek/atk-dnesp32s3",
+                name_filter="atk-dnesp32s3",
+                wake_word="hiesp",
+                idf_version=(6, 1, 0),
+            )
+            fragment = configure.call_args.args[1]
+            self.assertIn("CONFIG_SR_WN_WN9_HIESP=y", fragment)
+            self.assertNotIn("CONFIG_SR_WN_WN9_JARVIS_TTS=y", fragment)
 
     def test_unavailable_wake_word_is_rejected_before_sdk_mutations(self):
         with self.mock_idf() as (prepare, configure, _):
